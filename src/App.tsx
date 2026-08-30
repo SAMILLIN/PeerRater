@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import Landing from './pages/Landing';
 import ProjectDashboard from './pages/ProjectDashboard';
 import TaskBoard from './pages/TaskBoard';
@@ -32,10 +33,8 @@ export interface UserData {
 export default function App() {
   const [page, setPage] = useState<Page>('landing');
 
-  // ─── Current User ─────────────────────────────
   const [user, setUser] = useState<UserData | null>(null);
 
-  // ─── Demo Team ────────────────────────────────
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
     {
       id: '1',
@@ -67,7 +66,6 @@ export default function App() {
     },
   ]);
 
-  // ─── Login / Create / Join Team ──────────────
   const handleEnterApp = (
     name: string,
     role: Role,
@@ -88,7 +86,6 @@ export default function App() {
 
     setUser(newUser);
 
-    // Add user to team if they don't already exist
     const exists = teamMembers.some(
       (member) =>
         member.name.toLowerCase() === name.toLowerCase()
@@ -110,13 +107,11 @@ export default function App() {
     setPage('dashboard');
   };
 
-  // ─── Logout ──────────────────────────────────
   const handleLogout = () => {
     setUser(null);
     setPage('landing');
   };
 
-  // ─── Landing Page ────────────────────────────
   if (page === 'landing') {
     return (
       <Landing
@@ -126,18 +121,22 @@ export default function App() {
     );
   }
 
-  // ─── Main Application ────────────────────────
   return (
-    <div className="flex h-full bg-paper">
+    <div className="flex h-screen bg-paper">
+
       <Sidebar
         currentPage={page}
         onNavigate={setPage}
       />
 
       <main className="flex-1 overflow-y-auto">
+
         {page === 'dashboard' && (
           <ProjectDashboard
             onNavigate={setPage}
+            user={user}
+            teamMembers={teamMembers}
+            onLogout={handleLogout}
           />
         )}
 
@@ -158,6 +157,7 @@ export default function App() {
             onNavigate={setPage}
           />
         )}
+
       </main>
     </div>
   );

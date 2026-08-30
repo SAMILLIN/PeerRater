@@ -3,7 +3,6 @@ import type { Role } from '../App';
 
 interface Props {
   onClose: () => void;
-
   onComplete: (
     name: string,
     role: Role,
@@ -11,30 +10,21 @@ interface Props {
   ) => void;
 }
 
-type Step = 'details' | 'team';
-
 export default function AuthModal({
   onClose,
   onComplete,
 }: Props) {
-
-  const [step, setStep] = useState<Step>('details');
+  const [step, setStep] = useState(1);
 
   const [name, setName] = useState('');
 
-  const [role, setRole] = useState<Role>('leader');
+  const [role, setRole] = useState<Role>('member');
 
-  const [teamName, setTeamName] = useState('');
+  const [teamMode, setTeamMode] = useState<
+    'create' | 'join'
+  >('create');
 
   const [teamCode, setTeamCode] = useState('');
-
-  const [generatedCode, setGeneratedCode] = useState('');
-
-  const handleContinue = () => {
-    if (!name.trim()) return;
-
-    setStep('team');
-  };
 
   const generateTeamCode = () => {
     const code =
@@ -44,88 +34,65 @@ export default function AuthModal({
         .substring(2, 7)
         .toUpperCase();
 
-    setGeneratedCode(code);
+    setTeamCode(code);
   };
 
-  const handleEnter = () => {
+  const handleNext = () => {
+    if (step === 1 && name.trim()) {
+      setStep(2);
+    }
 
-    if (role === 'leader') {
-
-      if (!teamName.trim()) return;
-
-      if (!generatedCode) {
+    if (step === 2) {
+      if (teamMode === 'create' && !teamCode) {
         generateTeamCode();
-        return;
       }
 
-      onComplete(
-        name.trim(),
-        role,
-        generatedCode
-      );
-
-    } else {
-
-      if (!teamCode.trim()) return;
-
-      onComplete(
-        name.trim(),
-        role,
-        teamCode.toUpperCase()
-      );
+      setStep(3);
     }
   };
 
+  const handleComplete = () => {
+    if (!name.trim()) return;
+
+    if (!teamCode.trim()) {
+      const fallbackCode = 'PR-DEMO';
+      onComplete(name, role, fallbackCode);
+      return;
+    }
+
+    onComplete(name, role, teamCode);
+  };
+
   return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
 
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
-
-      {/* Overlay */}
-
+      {/* Background */}
       <div
-        className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal */}
-
-      <div className="relative w-full max-w-md bg-card border border-ink-20 rounded-2xl shadow-xl overflow-hidden">
+      <div className="relative w-full max-w-lg bg-card border border-ink-20 rounded-2xl shadow-xl overflow-hidden">
 
         {/* Header */}
-
-        <div className="flex items-center justify-between px-6 py-5 border-b border-ink-20">
+        <div className="border-b border-ink-20 px-6 py-5 flex items-center justify-between">
 
           <div>
+            <p className="font-mono text-[9px] uppercase tracking-widest text-teal mb-1">
+              PeerRater Setup
+            </p>
 
-            <div className="flex items-center gap-2">
-
-              <div className="w-8 h-8 bg-teal rounded-lg flex items-center justify-center">
-
-                <span className="text-white font-mono text-xs font-bold">
-                  PR
-                </span>
-
-              </div>
-
-              <div>
-
-                <p className="font-display text-xl text-ink">
-                  PeerRater
-                </p>
-
-                <p className="font-mono text-[8px] text-ink-50 uppercase tracking-widest">
-                  Team Setup
-                </p>
-
-              </div>
-
-            </div>
-
+            <h2 className="font-display text-2xl text-ink">
+              {step === 1 && 'Tell us about yourself'}
+              {step === 2 && 'Choose your team'}
+              {step === 3 && 'Confirm your setup'}
+            </h2>
           </div>
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-paper flex items-center justify-center text-ink-50 hover:text-ink"
+            className="w-8 h-8 rounded-lg border border-ink-20 text-ink-50 hover:text-ink hover:bg-paper transition-colors"
           >
             ✕
           </button>
@@ -133,142 +100,104 @@ export default function AuthModal({
         </div>
 
         {/* Progress */}
-
         <div className="px-6 pt-5">
 
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2">
 
-            <div className={`h-1 flex-1 rounded-full ${
-              step === 'details'
-                ? 'bg-teal'
-                : 'bg-teal'
-            }`} />
-
-            <div className={`h-1 flex-1 rounded-full ${
-              step === 'team'
-                ? 'bg-teal'
-                : 'bg-ink-20'
-            }`} />
+            {[1, 2, 3].map((number) => (
+              <div
+                key={number}
+                className={`h-1 flex-1 rounded-full ${
+                  number <= step
+                    ? 'bg-teal'
+                    : 'bg-ink-20'
+                }`}
+              />
+            ))}
 
           </div>
 
         </div>
 
-        {/* ================= STEP 1 ================= */}
+        <div className="p-6">
 
-        {step === 'details' && (
+          {/* ================= STEP 1 ================= */}
 
-          <div className="px-6 py-6">
-
-            <div className="mb-6">
-
-              <p className="font-mono text-[9px] uppercase tracking-widest text-teal mb-2">
-                Step 1 of 2
-              </p>
-
-              <h2 className="font-display text-3xl text-ink">
-                Who are you?
-              </h2>
-
-              <p className="text-sm text-ink-50 mt-2">
-                Tell your team how you'll be participating.
-              </p>
-
-            </div>
-
-            {/* Name */}
-
-            <div className="mb-6">
-
-              <label className="font-mono text-[9px] uppercase tracking-wider text-ink-50 mb-2 block">
-                Your Name
-              </label>
-
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Alex Johnson"
-                className="w-full bg-paper border border-ink-20 rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-teal transition-colors"
-              />
-
-            </div>
-
-            {/* Role */}
-
+          {step === 1 && (
             <div>
 
-              <label className="font-mono text-[9px] uppercase tracking-wider text-ink-50 mb-3 block">
-                Your Role
+              <p className="text-sm text-ink-50 mb-6">
+                Enter your name and select your role in the
+                project team.
+              </p>
+
+              <label className="block mb-5">
+
+                <span className="font-mono text-[10px] uppercase tracking-wider text-ink-50">
+                  Your Name
+                </span>
+
+                <input
+                  value={name}
+                  onChange={(e) =>
+                    setName(e.target.value)
+                  }
+                  placeholder="Enter your name"
+                  className="mt-2 w-full px-4 py-3 rounded-xl border border-ink-20 bg-paper text-ink outline-none focus:border-teal transition-colors"
+                />
+
               </label>
+
+              <p className="font-mono text-[10px] uppercase tracking-wider text-ink-50 mb-3">
+                Your Role
+              </p>
 
               <div className="grid grid-cols-2 gap-3">
 
                 {/* Leader */}
-
                 <button
                   onClick={() => setRole('leader')}
-                  className={`text-left border rounded-xl p-4 transition-all ${
+                  className={`p-4 rounded-xl border text-left transition-all ${
                     role === 'leader'
                       ? 'border-teal bg-teal-muted ring-1 ring-teal/20'
-                      : 'border-ink-20 bg-paper hover:border-ink-50'
+                      : 'border-ink-20 hover:border-ink-50'
                   }`}
                 >
 
-                  <div className="flex items-center justify-between mb-3">
-
-                    <span className="text-xl">
-                      👑
-                    </span>
-
-                    {role === 'leader' && (
-                      <span className="text-teal text-sm">
-                        ✓
-                      </span>
-                    )}
-
+                  <div className="text-xl mb-2">
+                    👑
                   </div>
 
-                  <p className="font-semibold text-sm text-ink">
+                  <p className="font-semibold text-ink text-sm">
                     Team Leader
                   </p>
 
-                  <p className="text-[11px] text-ink-50 mt-1 leading-relaxed">
-                    Create a team, manage members and coordinate tasks.
+                  <p className="text-xs text-ink-50 mt-1">
+                    Create and manage the project.
                   </p>
 
                 </button>
 
                 {/* Member */}
-
                 <button
                   onClick={() => setRole('member')}
-                  className={`text-left border rounded-xl p-4 transition-all ${
+                  className={`p-4 rounded-xl border text-left transition-all ${
                     role === 'member'
                       ? 'border-teal bg-teal-muted ring-1 ring-teal/20'
-                      : 'border-ink-20 bg-paper hover:border-ink-50'
+                      : 'border-ink-20 hover:border-ink-50'
                   }`}
                 >
 
-                  <div className="flex items-center justify-between mb-3">
-
-                    <span className="text-xl">
-                      👤
-                    </span>
-
-                    {role === 'member' && (
-                      <span className="text-teal text-sm">
-                        ✓
-                      </span>
-                    )}
-
+                  <div className="text-xl mb-2">
+                    👥
                   </div>
 
-                  <p className="font-semibold text-sm text-ink">
+                  <p className="font-semibold text-ink text-sm">
                     Team Member
                   </p>
 
-                  <p className="text-[11px] text-ink-50 mt-1 leading-relaxed">
-                    Join an existing team using a team pass code.
+                  <p className="text-xs text-ink-50 mt-1">
+                    Join and contribute to a project.
                   </p>
 
                 </button>
@@ -276,183 +205,219 @@ export default function AuthModal({
               </div>
 
             </div>
+          )}
 
-            {/* Continue */}
+          {/* ================= STEP 2 ================= */}
 
+          {step === 2 && (
+            <div>
+
+              <p className="text-sm text-ink-50 mb-6">
+                Create a new team or join an existing one using
+                a team pass code.
+              </p>
+
+              <div className="grid grid-cols-2 gap-3 mb-6">
+
+                <button
+                  onClick={() => setTeamMode('create')}
+                  className={`p-4 rounded-xl border text-left ${
+                    teamMode === 'create'
+                      ? 'border-teal bg-teal-muted'
+                      : 'border-ink-20'
+                  }`}
+                >
+
+                  <p className="font-semibold text-sm text-ink">
+                    Create Team
+                  </p>
+
+                  <p className="text-xs text-ink-50 mt-1">
+                    Generate a new team pass.
+                  </p>
+
+                </button>
+
+                <button
+                  onClick={() => setTeamMode('join')}
+                  className={`p-4 rounded-xl border text-left ${
+                    teamMode === 'join'
+                      ? 'border-teal bg-teal-muted'
+                      : 'border-ink-20'
+                  }`}
+                >
+
+                  <p className="font-semibold text-sm text-ink">
+                    Join Team
+                  </p>
+
+                  <p className="text-xs text-ink-50 mt-1">
+                    Enter a team pass code.
+                  </p>
+
+                </button>
+
+              </div>
+
+              {teamMode === 'create' && (
+
+                <div className="bg-paper border border-ink-20 rounded-xl p-5">
+
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-ink-50 mb-3">
+                    Your Team Pass
+                  </p>
+
+                  {teamCode ? (
+                    <div className="flex items-center justify-between">
+
+                      <span className="font-mono text-xl font-bold text-teal">
+                        {teamCode}
+                      </span>
+
+                      <button
+                        onClick={generateTeamCode}
+                        className="text-xs text-teal font-semibold"
+                      >
+                        Regenerate
+                      </button>
+
+                    </div>
+                  ) : (
+
+                    <button
+                      onClick={generateTeamCode}
+                      className="w-full border border-teal text-teal py-3 rounded-lg text-sm font-semibold"
+                    >
+                      Generate Team Pass
+                    </button>
+
+                  )}
+
+                </div>
+
+              )}
+
+              {teamMode === 'join' && (
+
+                <div>
+
+                  <label>
+
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-ink-50">
+                      Team Pass Code
+                    </span>
+
+                    <input
+                      value={teamCode}
+                      onChange={(e) =>
+                        setTeamCode(
+                          e.target.value.toUpperCase()
+                        )
+                      }
+                      placeholder="Example: PR-ABC12"
+                      className="mt-2 w-full px-4 py-3 rounded-xl border border-ink-20 bg-paper font-mono uppercase outline-none focus:border-teal"
+                    />
+
+                  </label>
+
+                </div>
+
+              )}
+
+            </div>
+          )}
+
+          {/* ================= STEP 3 ================= */}
+
+          {step === 3 && (
+            <div>
+
+              <p className="text-sm text-ink-50 mb-6">
+                Everything looks good. Here's your project setup.
+              </p>
+
+              <div className="space-y-4">
+
+                <div className="bg-paper border border-ink-20 rounded-xl p-4 flex justify-between">
+
+                  <span className="text-sm text-ink-50">
+                    Name
+                  </span>
+
+                  <span className="font-semibold text-ink">
+                    {name}
+                  </span>
+
+                </div>
+
+                <div className="bg-paper border border-ink-20 rounded-xl p-4 flex justify-between">
+
+                  <span className="text-sm text-ink-50">
+                    Role
+                  </span>
+
+                  <span className="font-semibold text-teal capitalize">
+                    {role === 'leader'
+                      ? 'Team Leader'
+                      : 'Team Member'}
+                  </span>
+
+                </div>
+
+                <div className="bg-paper border border-ink-20 rounded-xl p-4 flex justify-between">
+
+                  <span className="text-sm text-ink-50">
+                    Team Pass
+                  </span>
+
+                  <span className="font-mono font-bold text-ink">
+                    {teamCode || 'PR-DEMO'}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+        </div>
+
+        {/* Footer */}
+
+        <div className="border-t border-ink-20 px-6 py-4 flex justify-between">
+
+          {step > 1 ? (
             <button
-              onClick={handleContinue}
-              disabled={!name.trim()}
-              className="w-full mt-7 bg-teal text-white font-semibold py-3.5 rounded-xl hover:bg-teal-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
+              onClick={() => setStep(step - 1)}
+              className="text-sm font-medium text-ink-50 hover:text-ink"
+            >
+              ← Back
+            </button>
+          ) : (
+            <div />
+          )}
+
+          {step < 3 ? (
+            <button
+              onClick={handleNext}
+              disabled={step === 1 && !name.trim()}
+              className="bg-teal text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-teal-dark disabled:opacity-40"
             >
               Continue →
             </button>
-
-          </div>
-
-        )}
-
-        {/* ================= STEP 2 ================= */}
-
-        {step === 'team' && (
-
-          <div className="px-6 py-6">
-
-            <div className="mb-6">
-
-              <button
-                onClick={() => setStep('details')}
-                className="font-mono text-[9px] uppercase tracking-wider text-teal hover:underline mb-4"
-              >
-                ← Back
-              </button>
-
-              <p className="font-mono text-[9px] uppercase tracking-widest text-teal mb-2">
-                Step 2 of 2
-              </p>
-
-              <h2 className="font-display text-3xl text-ink">
-
-                {role === 'leader'
-                  ? 'Create your team'
-                  : 'Join your team'}
-
-              </h2>
-
-              <p className="text-sm text-ink-50 mt-2">
-
-                {role === 'leader'
-                  ? 'Set up your project team and invite members.'
-                  : 'Enter the pass code shared by your team leader.'}
-
-              </p>
-
-            </div>
-
-            {/* ================= LEADER ================= */}
-
-            {role === 'leader' && (
-
-              <div>
-
-                <div className="mb-5">
-
-                  <label className="font-mono text-[9px] uppercase tracking-wider text-ink-50 mb-2 block">
-                    Team / Project Name
-                  </label>
-
-                  <input
-                    value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
-                    placeholder="e.g. Smart Campus Project"
-                    className="w-full bg-paper border border-ink-20 rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-teal transition-colors"
-                  />
-
-                </div>
-
-                {/* Generated pass */}
-
-                {generatedCode ? (
-
-                  <div className="bg-teal-muted border border-teal/30 rounded-xl p-5 mb-5">
-
-                    <p className="font-mono text-[9px] uppercase tracking-widest text-teal mb-2">
-                      Your Team Pass Code
-                    </p>
-
-                    <p className="font-mono text-2xl font-bold tracking-[0.15em] text-ink">
-                      {generatedCode}
-                    </p>
-
-                    <p className="text-xs text-ink-50 mt-3 leading-relaxed">
-                      Share this code with your teammates so they can join
-                      your project.
-                    </p>
-
-                  </div>
-
-                ) : (
-
-                  <div className="bg-paper border border-dashed border-ink-20 rounded-xl p-5 mb-5">
-
-                    <p className="font-semibold text-sm text-ink">
-                      Team Pass System
-                    </p>
-
-                    <p className="text-xs text-ink-50 mt-1.5 leading-relaxed">
-                      PeerRater will generate a unique team pass code for
-                      members to join your project.
-                    </p>
-
-                  </div>
-
-                )}
-
-              </div>
-
-            )}
-
-            {/* ================= MEMBER ================= */}
-
-            {role === 'member' && (
-
-              <div>
-
-                <label className="font-mono text-[9px] uppercase tracking-wider text-ink-50 mb-2 block">
-                  Team Pass Code
-                </label>
-
-                <input
-                  value={teamCode}
-                  onChange={(e) =>
-                    setTeamCode(e.target.value.toUpperCase())
-                  }
-                  placeholder="PR-ABCDE"
-                  className="w-full bg-paper border border-ink-20 rounded-xl px-4 py-3 font-mono text-sm tracking-widest text-ink uppercase outline-none focus:border-teal transition-colors"
-                />
-
-                <div className="flex items-start gap-2 mt-4 bg-paper border border-ink-20 rounded-xl p-4">
-
-                  <span className="text-sm">
-                    ℹ
-                  </span>
-
-                  <p className="text-xs text-ink-50 leading-relaxed">
-                    Ask your team leader for the team pass code. Once entered,
-                    you'll be added to the team workspace.
-                  </p>
-
-                </div>
-
-              </div>
-
-            )}
-
-            {/* Action */}
-
+          ) : (
             <button
-              onClick={handleEnter}
-              disabled={
-                role === 'leader'
-                  ? !teamName.trim()
-                  : !teamCode.trim()
-              }
-              className="w-full mt-7 bg-teal text-white font-semibold py-3.5 rounded-xl hover:bg-teal-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
+              onClick={handleComplete}
+              className="bg-teal text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-teal-dark"
             >
-
-              {role === 'leader'
-                ? generatedCode
-                  ? 'Enter Project Dashboard →'
-                  : 'Generate Team Pass →'
-                : 'Join Team →'}
-
+              Enter Dashboard →
             </button>
+          )}
 
-          </div>
-
-        )}
+        </div>
 
       </div>
-
     </div>
   );
 }
