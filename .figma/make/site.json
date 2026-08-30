@@ -1,0 +1,10 @@
+{
+  "description": "PeerRater is a contribution tracking platform for student group projects that ensures fair grading by verifying actual contributions and recognizing collaboration.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

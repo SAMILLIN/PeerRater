@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@import 'tailwindcss';
+
+@theme {
+  --color-paper: #F5F3EE;
+  --color-paper-50: #FDFCF9;
+  --color-paper-100: #EDE9E1;
+  --color-card: #FDFCF9;
+  --color-ink: #171717;
+  --color-ink-70: #404040;
+  --color-ink-50: #737373;
+  --color-ink-20: #D4D0C8;
+  --color-teal: #0F766E;
+  --color-teal-dark: #0A5C56;
+  --color-teal-muted: #CCFBF1;
+  --color-verified: #166534;
+  --color-verified-bg: #F0FDF4;
+  --color-verified-border: #86EFAC;
+  --color-pending: #9A3412;
+  --color-pending-bg: #FFF7ED;
+  --color-pending-border: #FED7AA;
+  --color-revision: #991B1B;
+  --color-revision-bg: #FFF1F2;
+  --color-revision-border: #FECDD3;
+  --color-cobalt: #1D4ED8;
+  --color-cobalt-bg: #EFF6FF;
+  --color-cobalt-border: #BFDBFE;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-sans: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Manrope', system-ui, sans-serif;
+  background-color: #F5F3EE;
+  color: #171717;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4D0C8;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #A8A39B;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  height: 8px;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #D4D0C8;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0F766E;
+  border: 3px solid #FDFCF9;
+  box-shadow: 0 0 0 2px #0F766E, 0 2px 8px rgba(0, 0, 0, 0.18);
+  margin-top: -8px;
+}
+
+input[type='range']::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #D4D0C8;
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0F766E;
+  border: 3px solid #FDFCF9;
+  box-shadow: 0 0 0 2px #0F766E, 0 2px 8px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideDown 0.22s ease-out;
+}
+
+@keyframes stampIn {
+  0% {
+    opacity: 0;
+    transform: scale(1.25) rotate(-2deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.96) rotate(-1.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-1deg);
+  }
+}
+
+.stamp-in {
+  animation: stampIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Smooth range gradient */
+.range-gradient {
+  background: linear-gradient(to right, #5EEAD4 var(--sam-pct, 60%), #D4D0C8 var(--sam-pct, 60%));
+}
+
+input[type='range'].range-gradient::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #5EEAD4 var(--sam-pct, 60%), #D4D0C8 var(--sam-pct, 60%));
+}
